@@ -1,0 +1,176 @@
+﻿@page "/"
+@using System.Globalization
+@using Newtonsoft.Json
+@using Scheduler.Shared
+@using Scheduler.Shared.Utilis
+@using System.Text.Json.Serialization
+@using System.Collections.ObjectModel
+@using Scheduler.Client.Utilis
+
+@implements IDisposable
+
+@inject SidebarState SidebarState
+<div class="sidebar-container">
+    <SfSidebar Animate="true" EnableRtl="true" Width="250px" @bind-IsOpen="SidebarState.Open">
+        <ChildContent>
+            <div style="text-align: center;" class="text-content">
+                <SfButton @onclick="Close" class="btn-cross-light" IconCss="e-icons e-close"></SfButton>
+
+                <span>Import Your Timetable</span>
+
+                @foreach (var url in urlList.Select((str, index) => (str, index)))
+                {
+
+
+                    <div class='e-input-group'>
+                        <SfButton class="btn-cross-light" IconCss="e-icons e-close" @onclick="(() => HandleDelete(url.index))"></SfButton>
+
+                        <SfTooltip ID="Tooltip" class="url-tooltip" Target="@($"#url-{url.index}")" Content="@url.str">
+                            <SfTextBox id="@($"url-{url.index}")" class="url-list" Readonly="true" Value="@url.str" />
+                        </SfTooltip>
+
+                    </div>
+
+                }
+                <SfTextBox Placeholder="Timetable Share Url" ShowClearButton=true @bind-Value="urlString" FloatLabelType="@FloatLabelType.Auto" />
+                <SfButton CssClass="e-round" class="btn-url-add" IconCss="e-icons e-plus-icon" @onclick="HandleSubmit"></SfButton>
+
+            </div>
+        </ChildContent>
+    </SfSidebar>
+</div>
+
+<div class="schedule-container">
+    <SfSchedule TValue="AppointmentData" Width="100%">
+        <ScheduleEvents TValue="AppointmentData" ActionCompleted="OnActionCompleted"></ScheduleEvents>
+        <ScheduleEventSettings DataSource="@DataSource" AllowEditFollowingEvents="true"></ScheduleEventSettings>
+        <ScheduleViews>
+
+            <ScheduleView Option="View.Day"></ScheduleView>
+            <ScheduleView Option="View.Week"></ScheduleView>
+            <ScheduleView Option="View.WorkWeek"></ScheduleView>
+            <ScheduleView Option="View.Month"></ScheduleView>
+            <ScheduleView Option="View.Agenda"></ScheduleView>
+        </ScheduleViews>
+        <ScheduleTemplates>
+            <DateHeaderTemplate>
+                <div class="date-text">@(getDateHeaderText((context as TemplateContext).Date))</div>
+                @{
+                    @switch ((int)(context as TemplateContext).Date.DayOfWeek)
+                    {
+                        case 0:
+                            <div class="weather-text">25&deg;C</div>
+                            break;
+                        case 1:
+                            <div class="weather-text">18&deg;C</div>
+                            break;
+                        case 2:
+                            <div class="weather-text">10&deg;C</div>
+                            break;
+                        case 3:
+                            <div class="weather-text">16&deg;C</div>
+                            break;
+                        case 4:
+                            <div class="weather-text">8&deg;C</div>
+                            break;
+                        case 5:
+                            <div class="weather-text">27&deg;C</div>
+                            break;
+                        case 6:
+                            <div class="weather-text">17&deg;C</div>
+                            break;
+                        case -1:
+                            <div class="weather-text">17&deg;C</div>
+                            break;
+                    }
+                }
+            </DateHeaderTemplate>
+        </ScheduleTemplates>
+    </SfSchedule>
+</div>
+
+<SfToast @ref="ToastObj" Title="New Timetable Added" Content="@ToastContent" Timeout="3000">
+    <ToastPosition X="Right" Y="Bottom"></ToastPosition>
+</SfToast>
+@code {
+    [Parameter]
+    public string urlString { get; set; } = "";
+    List<string> urlList { get; set; } = new List<string>();
+    public List<AppointmentData> DataSource { get; set; } = new List<AppointmentData>();
+
+    SfToast ToastObj = new SfToast();
+
+    private string ToastContent { get; set; } = "Action completed";
+    private void HandleDelete(int index)
+    {
+        urlList.RemoveAt(index);
+        UpdateTimeTable();
+    }
+    private async void UpdateTimeTable()
+    {
+        ModuleToSchedule moduleToSchedule = new ModuleToSchedule();
+
+        foreach (var url in urlList)
+        {
+            await moduleToSchedule.DecodeUrlAsync(url);
+        }
+        await Task.WhenAll();
+        DataSource = moduleToSchedule.Data;
+        this.StateHasChanged();
+        await this.ToastObj.ShowAsync();
+
+
+    }
+    string Status = "";
+
+    public void OnActionCompleted(ActionEventArgs<AppointmentData> args)
+    {
+        if (args.ActionType == ActionType.EventCreate || args.ActionType == ActionType.EventChange || args.ActionType == ActionType.EventRemove)
+        {
+            Status = "Success";   //Status become success on create and update of an event.
+            Console.WriteLine(args.ToString());
+        }
+    }
+
+    private void HandleSubmit()
+    {
+        urlString = myUrl;// delete this
+        urlList.Add(urlString);
+        UpdateTimeTable();
+        urlString = "";
+    }
+    string myUrl =
+    "https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6";
+
+    DateTime CurrentDate = DateTime.Now;
+
+    public void Toggle()
+    {
+        SidebarState.Open = !SidebarState.Open;
+    }
+    public void Close()
+    {
+        SidebarState.Open = false;
+    }
+    public static string getDateHeaderText(DateTime date)
+    {
+        return date.ToString("dd ddd", CultureInfo.InvariantCulture);
+    }
+
+    protected override void OnInitialized()
+    {
+        SidebarState.Hidden = false;
+        SidebarState.OnChange += StateHasChanged;
+        Console.WriteLine($"init s {SidebarState.Hidden} o{SidebarState.Open }");
+
+    }
+
+    public void Dispose()
+    {
+        SidebarState.Hidden = true;
+        SidebarState.OnChange -= StateHasChanged;
+        Console.WriteLine($"dis s {SidebarState.Hidden} o{SidebarState.Open }");
+
+    }
+
+}
