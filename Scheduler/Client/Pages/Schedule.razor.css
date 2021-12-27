@@ -1,4 +1,4 @@
-﻿::deep .e-sidebar {
+::deep .e-sidebar {
     color: black;
     position:fixed;
     padding: 10px;
@@ -40,7 +40,9 @@
     float: right;
 }
 ::deep .btn-cross-light{
+    background-color: transparent !important;
     border-color: transparent;
+    color:black;
     border: none;
     float: right;
 }
@@ -55,4 +57,7 @@
 }
 ::deep .url-tooltip {
     width: 100%;
+}
+::deep .e-accordion .e-acrdn-item {
+    text-align: center;
 }

@@ -4,11 +4,12 @@ using Scheduler.Client;
 using Scheduler.Client.Utilis;
 using Syncfusion.Blazor;
 
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("YOUR LICENSE KEY");
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTUzMjMzQDMxMzkyZTM0MmUzMEVZM0J5K2tQVzRUdFQxVWRUbjNYcDJudTJNNU1RQ1VUeTU4WGZlMW9CSjQ9");
-builder.Services.AddSingleton<SidebarState>();
+builder.Services.AddScoped<SidebarState>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddSyncfusionBlazor();

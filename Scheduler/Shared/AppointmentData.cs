@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Scheduler.Shared
 {
-    public class AppointmentData
+
+    public class AppointmentData 
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Subject { get; set; }
         public string Location { get; set; }
         public DateTime StartTime { get; set; }
@@ -18,5 +19,8 @@ namespace Scheduler.Shared
         public string? RecurrenceRule { get; set; }
         public string RecurrenceException { get; set; }
         public Nullable<int> RecurrenceID { get; set; }
+        public int OwnerId { get; set; } = new Random().Next(1,4);
     }
+
+
 }

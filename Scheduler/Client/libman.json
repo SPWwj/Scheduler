@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "defaultProvider": "cdnjs",
+  "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "bootstrap@5.1.3",
-      "destination": "wwwroot/css/bootstrap/"
+      "library": "@syncfusion/ej2@19.4.38",
+      "destination": "wwwroot/css/syncfusion/ej2/"
     }
   ]
 }

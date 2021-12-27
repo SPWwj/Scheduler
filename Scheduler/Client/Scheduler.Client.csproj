@@ -11,8 +11,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.1" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.1" />
-    <PackageReference Include="Syncfusion.Blazor.Notifications" Version="19.4.0.38" />
-    <PackageReference Include="Syncfusion.Blazor.Schedule" Version="19.4.0.38" />
+    <PackageReference Include="Syncfusion.Blazor" Version="19.4.0.38" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="19.4.0.38" />
+    <PackageReference Include="Syncfusion.Licensing" Version="19.4.0.38" />
   </ItemGroup>
 
   <ItemGroup>

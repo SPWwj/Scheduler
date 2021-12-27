@@ -1,19 +1,17 @@
 ﻿@page "/counter"
-<div class='e-input-group'>
-    <input class='e-input' Placeholder='Date of Birth' type='text'>
-    <span class='e-input-group-icon e-input-calendar'></span>
-</div>
+<SfIcon Name="IconName.Cut"></SfIcon>
+<SfIcon Name="IconName.Copy"></SfIcon>
+<SfIcon Name="IconName.Paste"></SfIcon>
+<SfIcon Name="IconName.Bold"></SfIcon>
+<SfIcon Name="IconName.Underline"></SfIcon>
+<SfIcon Name="IconName.Italic"></SfIcon>
+
+<span class="e-icons e-search"></span>
+<SfButton class="btn-cross-light" IconCss="e-icons e-close"></SfButton>
+<SfButton CssClass="e-round" IconCss="e-icons e-plus-icon" IsPrimary="true"></SfButton>
 
 <style>
-.e-input-group-icon:before {
-  font-family: e-icons;
-}
-
-.e-input-group .e-input-group-icon.e-input-calendar {
-  font-size: 16px;
-}
-
-.e-input-group-icon.e-input-calendar:before {
-  content: "";
-}
+    .e-plus-icon::before {
+        content: '\e823';
+    }
 </style>

@@ -1,7 +1,8 @@
 {
-  "type": "blazorwasm",
-  "request": "attach",
-  "name": "...",
+    "type": "blazorwasm",
+    "request": "attach",
+    "name": "Attach and Debug",
+    "url": "https://localhost:7104",
     "iisSettings": {
       "windowsAuthentication": false,
       "anonymousAuthentication": true,

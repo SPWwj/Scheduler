@@ -1,0 +1,259 @@
+﻿@page "/schedule/{RoomID?}"
+@using System.Globalization
+@using Microsoft.AspNetCore.SignalR.Client
+@using Newtonsoft.Json
+@using Scheduler.Shared
+@using Scheduler.Shared.Utilis
+@using System.Text.Json.Serialization
+@using System.Collections.ObjectModel
+@using Scheduler.Client.Utilis
+@using static Scheduler.Shared.ScheduleData
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+
+<SfDialog Width="250px" IsModal="true" Visible="DialogVisible">
+    <DialogTemplates>
+        <Content>
+            <label>Enter Your Name</label>
+            <SfTextBox Placeholder='Name' FloatLabelType='@FloatLabelType.Auto' @bind-Value="Username" />
+            <SfButton @onclick="addName" CssClass="e-flat" IsPrimary="true" IconCss="e-icons e-people" Content="ENTER">
+            </SfButton>
+        </Content>
+
+
+    </DialogTemplates>
+</SfDialog>
+
+
+<div class="schedule-container">
+    <SfAccordion>
+        <AccordionItems>
+            <AccordionItem>
+                <HeaderTemplate>
+                    <div>@($"{NavigationManager.Uri}/{RoomID}")</div>
+                </HeaderTemplate>
+                <ContentTemplate>
+                    <div style="text-align: center;" class="text-content">
+                        <span>Greetingsx: @Username</span>
+                        <span>Import Your Timetable</span>
+                        @foreach (var s in schedules.Select((v, index) => (v, index)))
+                        {
+                            <div class='e-input-group'>
+                                <SfButton class="btn-cross-light" IconCss="e-icons e-close"
+                                @onclick="(() => HandleDelete(s.index))"></SfButton>
+                                <SfTooltip ID="Tooltip" class="url-tooltip" Target="@($"#url-{s.index}")"
+                                Content="@s.v.TimetableUrl">
+                                    <SfTextBox id="@($"url-{s.index}")" class="url-list" Readonly="true"
+                                    Value="@($"{s.v.Name} {s.v.TimetableUrl}")" />
+                                </SfTooltip>
+                            </div>
+                        }
+                        <SfTextBox Placeholder="Timetable Share Url" ShowClearButton=true @bind-Value="urlString"
+                            FloatLabelType="@FloatLabelType.Auto" />
+                        <SfButton disabled="@(!IsConnected)" CssClass="e-round" class="btn-url-add"
+                            IconCss="e-icons e-plus-icon" @onclick="HandleSubmit">
+                        </SfButton>
+                    </div>
+                </ContentTemplate>
+            </AccordionItem>
+        </AccordionItems>
+    </SfAccordion>
+    <SfSchedule TValue="AppointmentData" Width="100%">
+        <ScheduleEvents TValue="AppointmentData" OnActionBegin="OnActionBegin" ActionCompleted="OnActionCompleted"/>
+        <ScheduleEventSettings DataSource="@DataSource" AllowEditFollowingEvents="true"></ScheduleEventSettings>
+         <ScheduleResources>
+            <ScheduleResource TItem="ResourceData" TValue="int[]" DataSource="@OwnersData" Field="OwnerId" Title="Owner"
+                Name="Owners" TextField="OwnerText" IdField="Id" ColorField="OwnerColor" AllowMultiple="true">
+            </ScheduleResource>
+        </ScheduleResources> 
+        <ScheduleViews>
+            <ScheduleView Option="View.Day"></ScheduleView>
+            <ScheduleView Option="View.Week"></ScheduleView>
+            <ScheduleView Option="View.WorkWeek"></ScheduleView>
+            <ScheduleView Option="View.Month"></ScheduleView>
+            <ScheduleView Option="View.Agenda"></ScheduleView>
+        </ScheduleViews>
+
+    </SfSchedule>
+</div>
+
+<SfToast @ref="ToastObj" Title="New Timetable Added" Content="@ToastContent" Timeout="3000">
+    <ToastPosition X="Right" Y="Bottom"></ToastPosition>
+</SfToast>
+@code {
+
+    [Parameter]
+    public string? RoomID { get; set; }
+    public string urlString { get; set; } = "";
+    List<ScheduleData> schedules { get; set; } = new List<ScheduleData>();
+    public List<AppointmentData> DataSource { get; set; } = new List<AppointmentData>();
+    SfToast ToastObj = new SfToast();
+    string Status = "";
+    public List<ResourceData> OwnersData { get; set; } = new List<ResourceData>
+    {
+        new ResourceData{ OwnerText = "Nancy", Id = 1, OwnerGroupId = 1, OwnerColor = "#ffaa00" },
+        new ResourceData{ OwnerText = "Steven", Id = 2, OwnerGroupId = 2, OwnerColor = "#f8a398" },
+        new ResourceData{ OwnerText = "Michael", Id = 3, OwnerGroupId = 1, OwnerColor = "#7499e1" }
+    };
+    string myUrl =
+    "https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6";
+
+
+    private bool _dialogVisible = true;
+    public bool DialogVisible
+    {
+        get { return Username == string.Empty ? true : _dialogVisible; }
+        set { _dialogVisible = value; }
+    }
+
+    public string Username { get; set; } = string.Empty;
+    private void addName()
+    {
+        if (Username != string.Empty) { DialogVisible = false; }
+    }
+    private HubConnection? hubConnection;
+
+    private string ToastContent { get; set; } = "Action completed";
+    private void HandleDelete(int index)
+    {
+        schedules.RemoveAt(index);
+        UpdateTimeTable();
+    }
+    private async void UpdateTimeTable()
+    {
+        ModuleToSchedule moduleToSchedule = new ModuleToSchedule();
+        foreach (var s in schedules)
+        {
+            await moduleToSchedule.DecodeUrlAsync(s);
+        }
+        await Task.WhenAll();
+        DataSource = moduleToSchedule.Data;
+        this.StateHasChanged();
+        await this.ToastObj.ShowAsync();
+
+
+    }
+    public void OnActionBegin(ActionEventArgs<AppointmentData> args)
+    {
+        if (args.ActionType == ActionType.EventCreate) //To check for request type is event delete
+        {
+            args.AddedRecords.ForEach(v => v.Subject = $"{Username} {v.Subject}");
+        }
+    }
+    public async void OnActionCompleted(ActionEventArgs<AppointmentData> args)
+    {
+        if (hubConnection is not null)
+        {
+            ScheduleData scheduleData = new ScheduleData()
+            {
+                Name = Username,
+                RoomID = RoomID!,
+                ThisEvent = Event.Appointment
+            };
+
+            switch (args.ActionType)
+            {
+                case (ActionType.EventCreate):
+                    scheduleData.Appointments = args.AddedRecords;
+                    scheduleData.ThisEventType = EventType.Add;
+                    break;
+                case (ActionType.EventChange):
+                    scheduleData.Appointments = args.ChangedRecords;
+                    scheduleData.ThisEventType = EventType.Edit;
+                    break;
+                case (ActionType.EventRemove):
+                    scheduleData.Appointments = args.DeletedRecords;
+                    scheduleData.ThisEventType = EventType.Delete;
+                    break;
+                default:
+                    break;
+            }
+            await hubConnection.SendAsync("SendAppointment", scheduleData);
+        }
+
+
+
+    }
+
+    private async void HandleSubmit()
+    {
+        urlString = myUrl;// delete this
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendTimeTable", Username, RoomID, urlString);
+        }
+        urlString = "";
+    }
+    protected async override void OnInitialized()
+    {
+        RoomID = RoomID == null ? Guid.NewGuid().ToString() : RoomID;
+        NavigationManager.NavigateTo($"/schedule/{RoomID}");
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("https://localhost:7104/chathub"))
+        .Build();
+        hubConnection.On<ScheduleData>("ReceiveMessage", async (scheduleData) =>
+        {
+            switch (scheduleData.ThisEvent)
+            {
+                case (Event.Timetable):
+                    if (scheduleData.TimetableUrl != null)
+                    {
+                        schedules.Add(scheduleData);
+                        UpdateTimeTable();
+                    }
+                    break;
+
+                case (Event.Appointment):
+                    switch (scheduleData.ThisEventType)
+                    {
+                        case (EventType.Add):
+                            scheduleData.Appointments.AddRange(DataSource);
+                            DataSource = scheduleData.Appointments;
+
+                            break;
+                        case (EventType.Delete):
+                            DataSource = DataSource.Where(d => !scheduleData.Appointments.Any(x => x.Id == d.Id)).ToList();
+                            break;
+                        case (EventType.Edit):
+                            scheduleData.Appointments.AddRange(DataSource.Where(d => !scheduleData.Appointments.Any(x => x.Id == d.Id)).ToList());
+                            DataSource = scheduleData.Appointments;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    Console.WriteLine($"Unkown {scheduleData}");
+                    break;
+            }
+            await this.ToastObj.ShowAsync();
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+        await JoinRoom();
+    }
+
+
+    private async Task JoinRoom()
+    {
+        Console.WriteLine(hubConnection?.State);
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("JoinRoom", RoomID);
+        }
+    }
+
+    public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
+
+    public async void Dispose()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+}
