@@ -42,14 +42,14 @@ namespace Scheduler.Shared.Utilis
                 if (response.IsSuccessStatusCode)
                 {
                     NUSMod nusMod = await response.Content.ReadAsAsync<NUSMod>();
-                    pushModuleTimeTable(nusMod, mod[1], timetableLink.Name!);
+                    pushModuleTimeTable(nusMod, mod[1], timetableLink);
 
                 }
             }
 
         }
 
-        public void pushModuleTimeTable(NUSMod module, string roomsStr, string name)
+        public void pushModuleTimeTable(NUSMod module, string roomsStr, TimetableLink timetableLink)
         {
             var myClassIds = this.urlHelper.getRooms(roomsStr).Select(myclass => this.urlHelper.getClasseId(myclass));
             var dateHelper = new DateHelper();
@@ -63,7 +63,9 @@ namespace Scheduler.Shared.Utilis
                 {
                     var d = new AppointmentData
                     {
-                        Subject = name == null ? module.moduleCode : $"{name} {module.moduleCode}",
+                        UserDataId = timetableLink.OwerID,
+                        TimeTableLinkId = timetableLink.Id,
+                        Subject = timetableLink.Name == null ? module.moduleCode : $"{timetableLink.Name} {module.moduleCode}",
                         StartTime = new DateTime(2022, 1, 10, Convert.ToInt32(modClass.startTime.Substring(0, 2)), Convert.ToInt32(modClass.startTime.Substring(2)), 0),
                         EndTime = new DateTime(2022, 1, 10, Convert.ToInt32(modClass.endTime.Substring(0, 2)), Convert.ToInt32(modClass.endTime.Substring(2)), 0)
                     };

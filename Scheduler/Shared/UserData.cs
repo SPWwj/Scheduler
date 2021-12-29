@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 
 namespace Scheduler.Shared
 {
-    public class TimetableLink
+    public class UserData
     {
-        public Guid Id { get; set; }
-        public bool Loaded { get; set; }
-        public string Url { get; set; }
-        public Guid OwerID { get; set; }
         public string Name { get; set; }
-
+        public Guid Id  { get; set; }
+        public string RoomID  { get; set; }
+        public string ThemeColor { get; set; }
     }
 }

@@ -1,12 +1,8 @@
 ﻿@page "/schedule/{RoomID?}"
-@using System.Globalization
 @using Microsoft.AspNetCore.SignalR.Client
-@using Newtonsoft.Json
 @using Scheduler.Shared
 @using Scheduler.Shared.Utilis
-@using System.Text.Json.Serialization
-@using System.Collections.ObjectModel
-@using static Scheduler.Shared.ScheduleData
+@using System.Drawing
 @implements IDisposable
 @inject NavigationManager NavigationManager
 @inject MenuItemState MenuItemState
@@ -36,14 +32,15 @@
                 <ContentTemplate>
                     <div style="text-align: center;" class="text-content">
                         <span>Greetingsx: @Username</span>
+                        <span>Current UpdateCount @UpdateCount</span>
+
                         <span>Import Your Timetable</span>
                         @foreach (var s in Timetables)
                         {
                             <div class='e-input-group'>
                                 <SfButton class="btn-cross-light" IconCss="e-icons e-close"
                                       @onclick="(() => HandleUpdateTimetable(s.Id))"></SfButton>
-                                <SfTooltip ID="Tooltip" class="url-tooltip" Target="@($"#url-{s.Id}")"
-                                       Content="@s.Url">
+                                <SfTooltip ID="Tooltip" class="url-tooltip" Target="@($"#url-{s.Id}")" Content="@s.Url">
                                     <SfTextBox id="@($"url-{s.Id}")" class="url-list" Readonly="true"
                                            Value="@($"{s.Name} {s.Id}")" />
                                 </SfTooltip>
@@ -63,8 +60,8 @@
         <ScheduleEvents TValue="AppointmentData" OnActionBegin="OnActionBegin" />
         <ScheduleEventSettings DataSource="@DataSource" AllowEditFollowingEvents="true"></ScheduleEventSettings>
         <ScheduleResources>
-            <ScheduleResource TItem="ResourceData" TValue="int[]" DataSource="@OwnersData" Field="OwnerId" Title="Owner"
-                              Name="Owners" TextField="OwnerText" IdField="Id" ColorField="OwnerColor" AllowMultiple="true">
+            <ScheduleResource TItem="UserData" TValue="Guid" Title="Owner" Name="Owners" TextField="Name"
+                              DataSource="@UserDatas" Field="UserDataId" IdField="Id" ColorField="ThemeColor">
             </ScheduleResource>
         </ScheduleResources>
         <ScheduleViews>
@@ -86,21 +83,48 @@
     [Parameter]
     public string? RoomID { get; set; }
     private string urlString { get; set; } = "";
-    private List<TimetableLink> Timetables { get; set; } = new List<TimetableLink>();
-    private string ToastContent { get; set; } = "Action completed";
-
-    private List<AppointmentData> DataSource { get; set; } = new List<AppointmentData>();
-    SfToast ToastObj = new SfToast();
-    private List<ResourceData> OwnersData { get; set; } = new List<ResourceData>
+    public string Username { get; set; } = string.Empty;
+    private UserData userData = new UserData();
+    public int UpdateCount { get; set; } = 0;
+    private async void addName()
     {
-        new ResourceData{ OwnerText = "Nancy", Id = 1, OwnerGroupId = 1, OwnerColor = "#ffaa00" },
-        new ResourceData{ OwnerText = "Steven", Id = 2, OwnerGroupId = 2, OwnerColor = "#f8a398" },
-        new ResourceData{ OwnerText = "Michael", Id = 3, OwnerGroupId = 1, OwnerColor = "#7499e1" }
-    };
+        if (Username != string.Empty)
+        {
+
+            userData = new UserData()
+                {
+                    Name = Username,
+                    Id = Guid.NewGuid(),
+                    RoomID = RoomID!,
+                    ThemeColor = ColorsHelper.Colors[new Random().Next(0, ColorsHelper.Colors.Count)]
+        };
+            DialogVisible = false;
+            if (hubConnection is not null)
+            {
+                ScheduleData scheduleData = new()
+                    {
+                        RoomID = RoomID!,
+                        Name = userData.Name,
+                        Event = ScheduleEvent.Event.UserEvent,
+                        EventType = ScheduleEvent.EventType.Add,
+                        UserDatas = new List<UserData>()
+                                    {
+                                        userData
+                                    }
+                    };
+                await hubConnection.SendAsync("SendMessage", scheduleData);
+            }
+            this.StateHasChanged();
+        }
+    }
+    private List<TimetableLink> Timetables { get; set; } = new List<TimetableLink>();
+    private List<AppointmentData> DataSource { get; set; } = new List<AppointmentData>();
+    private List<UserData> UserDatas { get; set; } = new List<UserData>();
     string myUrl =
     "https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6";
 
-
+    private string ToastContent { get; set; } = "Action completed";
+    SfToast ToastObj = new SfToast();
     private bool _dialogVisible = true;
     private bool DialogVisible
     {
@@ -108,11 +132,6 @@
         set { _dialogVisible = value; }
     }
 
-    public string Username { get; set; } = string.Empty;
-    private void addName()
-    {
-        if (Username != string.Empty) { DialogVisible = false; }
-    }
     private HubConnection? hubConnection;
 
     private async void HandleUpdateTimetable(Guid? id)
@@ -128,29 +147,40 @@
                 TimetableLinks = new List<TimetableLink>()
                 {
                     new TimetableLink()
-                       {
-                           Name = Username,
-                           Url = urlString,
-                           OwerID = "",
-                           Id = id == null ? Guid.NewGuid() : (Guid)id!
-                       }
+                    {
+                        Name = Username,
+                        Url = urlString,
+                        OwerID = userData.Id,
+                        Id = id == null ? Guid.NewGuid() : (Guid)id!
+                    }
                 }
             };
         if (hubConnection is not null)
         {
-
             await hubConnection.SendAsync("SendMessage", scheduleData);
         }
         urlString = "";
- 
+
 
     }
 
-    private async void UpdateTimeTable(string toast)
+    private async void AddTimeTable(string toast,List<TimetableLink> timetableLinks)
     {
         ModuleToSchedule moduleToSchedule = new ModuleToSchedule();
-        await moduleToSchedule.DecodeTimetables(Timetables.ToList());
+        await moduleToSchedule.DecodeTimetables(timetableLinks);
+        moduleToSchedule.Data.AddRange(DataSource);
         DataSource = moduleToSchedule.Data;
+        ToastContent = toast;
+        this.StateHasChanged();
+        await this.ToastObj.ShowAsync();
+        ToastContent = "";
+    }
+    private async void RemoveTimeTable(string toast,List<TimetableLink> timetableLinks)
+    {
+        Timetables.RemoveAll(t => timetableLinks.Any(a => a.Id == t.Id));
+        var apts = DataSource.ToList();
+        apts.RemoveAll(d => timetableLinks.Any(a => a.Id == d.TimeTableLinkId));
+        DataSource = apts;
         ToastContent = toast;
         this.StateHasChanged();
         await this.ToastObj.ShowAsync();
@@ -160,8 +190,9 @@
     {
 
 
-        if (hubConnection is not null 
-            && (args.ActionType == ActionType.EventCreate || args.ActionType == ActionType.EventChange || args.ActionType == ActionType.EventRemove))
+        if (hubConnection is not null
+        && (args.ActionType == ActionType.EventCreate || args.ActionType == ActionType.EventChange || args.ActionType ==
+        ActionType.EventRemove))
         {
             args.Cancel = true;
             ScheduleData scheduleData = new ScheduleData()
@@ -174,8 +205,11 @@
             switch (args.ActionType)
             {
                 case (ActionType.EventCreate):
-                    args.AddedRecords.ForEach(v => v.Subject = $"{Username} {v.Subject}");
-
+                    args.AddedRecords.ForEach(v =>
+                    {
+                        v.Subject = $"{Username} {v.Subject}";
+                        v.UserDataId = userData.Id;
+                    });
                     scheduleData.Appointments = args.AddedRecords;
                     scheduleData.EventType = ScheduleEvent.EventType.Add;
                     break;
@@ -195,16 +229,6 @@
 
 
 
-    }
- 
-
-    private async Task JoinRoom()
-    {
-        Console.WriteLine(hubConnection?.State);
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("JoinRoom", RoomID);
-        }
     }
 
     public bool IsConnected =>
@@ -228,21 +252,33 @@
                     {
                         case (ScheduleEvent.EventType.Add):
                             Timetables.AddRange(scheduleData.TimetableLinks);
-
-                            UpdateTimeTable("Table Added");
+                            AddTimeTable("Table Added", scheduleData.TimetableLinks);
                             break;
                         case (ScheduleEvent.EventType.Delete):
-                            Timetables.RemoveAll(t => scheduleData.TimetableLinks.Any(a => a.Id == t.Id));
-                            
-                            UpdateTimeTable("Table Deleted");
+                            RemoveTimeTable("Table Deleted",scheduleData.TimetableLinks);
                             break;
                     }
+                    UpdateCount = UpdateCount + 1; 
+                    break;
+
+                case (ScheduleEvent.Event.UserEvent):
+                    switch (scheduleData.EventType)
+                    {
+                        case (ScheduleEvent.EventType.Add):
+                            scheduleData.UserDatas.AddRange(UserDatas);
+                            UserDatas = scheduleData.UserDatas;
+                            break;
+                    }
+                    UpdateCount = UpdateCount + 1; 
+                    StateHasChanged();
+
                     break;
                 case (ScheduleEvent.Event.Appointment):
                     switch (scheduleData.EventType)
                     {
                         case (ScheduleEvent.EventType.Add):
                             scheduleData.Appointments.AddRange(DataSource);
+
                             DataSource = scheduleData.Appointments;
                             ToastContent = "Apt Added";
 
@@ -256,16 +292,59 @@
                             scheduleData.Appointments.AddRange(DataSource.Where(d => !scheduleData.Appointments.Any(x => x.Id == d.Id)).ToList());
                             DataSource = scheduleData.Appointments;
                             ToastContent = "Apt Edited";
-
                             break;
                         default:
                             break;
                     }
+                    UpdateCount = UpdateCount + 1; 
                     StateHasChanged();
                     await this.ToastObj.ShowAsync();
                     ToastContent = "";
-
                     break;
+                case (ScheduleEvent.Event.Planting):
+                    if (hubConnection != null)
+                    {
+                        switch (scheduleData.EventType)
+                        {
+                            case (ScheduleEvent.EventType.SeedRequest):
+                                scheduleData.UpdateCount = UpdateCount;
+                                scheduleData.EventType = ScheduleEvent.EventType.SeedInfo;
+                                await hubConnection.SendAsync("PlantingMessage", scheduleData);
+                                break;
+                            case (ScheduleEvent.EventType.SeedInfo):
+                                if (UpdateCount < scheduleData.UpdateCount)
+                                {
+                                    UpdateCount += scheduleData.UpdateCount;
+                                    scheduleData.EventType = ScheduleEvent.EventType.SeedAccept;
+                                    await hubConnection.SendAsync("PlantingMessage", scheduleData);
+                                }
+                                break;
+                            case (ScheduleEvent.EventType.SeedAccept):
+                                scheduleData.EventType = ScheduleEvent.EventType.Seeding;
+                                scheduleData.Appointments = DataSource.ToList();
+                                scheduleData.UserDatas = UserDatas.ToList();
+                                scheduleData.TimetableLinks = Timetables.ToList();
+
+                                await hubConnection.SendAsync("PlantingMessage", scheduleData);
+                                break;
+                            case (ScheduleEvent.EventType.Seeding):
+                                scheduleData.UserDatas.AddRange(UserDatas.ToList());
+                                UserDatas = scheduleData.UserDatas;
+                                Timetables = scheduleData.TimetableLinks;
+                                DataSource = scheduleData.Appointments;
+
+                                ToastContent = "Room History loaded";
+                                StateHasChanged();
+                                await this.ToastObj.ShowAsync();
+                                ToastContent = "";
+                                break;
+                            default:
+                                break;
+                        }
+
+                    }
+                    break;
+
                 default:
                     Console.WriteLine($"Unkown {scheduleData}");
                     break;
@@ -275,7 +354,13 @@
         await hubConnection.StartAsync();
         await JoinRoom();
     }
-
+    private async Task JoinRoom()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("JoinRoom", RoomID);
+        }
+    }
     public async void Dispose()
     {
         if (hubConnection is not null)

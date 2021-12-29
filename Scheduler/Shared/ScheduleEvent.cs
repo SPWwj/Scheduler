@@ -11,7 +11,10 @@ namespace Scheduler.Shared
         public enum Event
         {
             Timetable,
+            UserEvent,
             Appointment,
+            Planting,
+            JoinRoom,
             Unkown
 
         }
@@ -19,7 +22,11 @@ namespace Scheduler.Shared
         {
             Add,
             Edit,
-            Delete
+            Delete,
+            Seeding,
+            SeedRequest,
+            SeedInfo,
+            SeedAccept,
 
         }
     }

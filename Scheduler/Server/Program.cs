@@ -8,7 +8,10 @@ builder.Host.ConfigureLogging(logging =>
     logging.AddConsole();
 });
 // Add services to the container.
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(conf =>
+{
+    conf.MaximumReceiveMessageSize = null;
+});
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddResponseCompression(opts =>
@@ -55,16 +58,15 @@ app.Use(async (context, next) =>
 });
 app.UseHttpsRedirection();
 
-//app.UseBlazorFrameworkFiles();
-//app.UseStaticFiles();
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
 
 app.UseRouting();
-
 
 app.MapRazorPages();
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
 
-//app.MapFallbackToFile("index.html");
+app.MapFallbackToFile("index.html");
 
 app.Run();

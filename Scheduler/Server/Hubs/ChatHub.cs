@@ -22,7 +22,35 @@ namespace Scheduler.Server.Hubs
         public async Task JoinRoom(string roomName)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, roomName);
-         
+            await Clients.OthersInGroup(roomName).SendAsync("ReceiveMessage", new ScheduleData(){
+                ConnectionId = Context.ConnectionId,
+                Event = ScheduleEvent.Event.Planting,
+                EventType = ScheduleEvent.EventType.SeedRequest
+            });
+        }
+        public async Task PlantingMessage(ScheduleData scheduleData)
+        {
+
+            switch(scheduleData.EventType){
+                case (ScheduleEvent.EventType.SeedInfo) :
+                    string receiver = scheduleData.ConnectionId;
+                    scheduleData.ConnectionId = Context.ConnectionId;
+                    scheduleData.EventType = ScheduleEvent.EventType.SeedInfo;
+                    await Clients.Client(receiver).SendAsync("ReceiveMessage", scheduleData);
+
+                    break;
+                case (ScheduleEvent.EventType.SeedAccept):
+                    string giver = scheduleData.ConnectionId;
+                    scheduleData.ConnectionId = Context.ConnectionId;
+                    await Clients.Client(giver).SendAsync("ReceiveMessage", scheduleData);
+
+                    break;
+                case (ScheduleEvent.EventType.Seeding):
+                    await Clients.Client(scheduleData.ConnectionId).SendAsync("ReceiveMessage", scheduleData);
+
+                    break;
+            }
+    
         }
 
         public Task LeaveRoom(string roomName)
