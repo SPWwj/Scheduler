@@ -1,2 +1,13 @@
 ﻿@page "/"
 @using System.Globalization
+@using Scheduler.Client.Utilis
+@inject MenuItemState MenuItemState
+
+
+@code{
+    protected override void OnInitialized()
+    {
+        MenuItemState.SetCurrentURL("/");
+    }
+
+}

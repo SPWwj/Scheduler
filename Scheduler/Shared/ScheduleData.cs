@@ -3,32 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Scheduler.Shared.ScheduleEvent;
 
 namespace Scheduler.Shared
 {
     public class ScheduleData
     {
         public string RoomID { get; set; }
-        public List<AppointmentData> Appointments { get; set; } = new List<AppointmentData>();
         public string? Name { get; set; }
-        public string? TimetableUrl { get; set; }
-        public Event ThisEvent { get; set; } = Event.Timetable;
-        public EventType ThisEventType { get; set; }
 
-        public enum Event
-        {
-            Timetable,
-            Appointment,
-            Unkown
+        public List<AppointmentData> Appointments { get; set; } = new List<AppointmentData>();
+        public List<TimetableLink> TimetableLinks { get; set; } = new List<TimetableLink>();
+        public Event Event { get; set; } = Event.Timetable;
+        public EventType EventType { get; set; }
 
-        }
-        public enum EventType
-        {
-            Add,
-            Edit,
-            Delete
-
-        }
+      
 
     }
 }

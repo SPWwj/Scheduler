@@ -1,43 +1,7 @@
-﻿@using Scheduler.Client.Utilis
-@inject SidebarState SidebarState
+﻿@inject NavigationManager NavigationManager
+@inject MenuItemState MenuItemState
 
-<SfMenu TValue="MenuItem">
-    <MenuEvents TValue="MenuItem"></MenuEvents>
-    <MenuItems>
-        <MenuItem Text="Home" Url="/">
-            <MenuItems>
-                <MenuItem Text="Conferences"></MenuItem>
-                <MenuItem Text="Music"></MenuItem>
-                <MenuItem Text="Workshops"></MenuItem>
-            </MenuItems>
-        </MenuItem>
-        <MenuItem Text="Chat" Url="chat">
-            <MenuItems>
-                <MenuItem Text="Now Showing"></MenuItem>
-                <MenuItem Text="Coming Soon"></MenuItem>
-            </MenuItems>
-        </MenuItem>
-        <MenuItem Text="Counter" Url="counter">
-            <MenuItems>
-                <MenuItem Text="Newsletter"></MenuItem>
-                <MenuItem Text="Media Gallery"></MenuItem>
-            </MenuItems>
-        </MenuItem>
-
-        <MenuItem Text="Toggle Sidebar" Id="togggle-sidebar" Hidden="SidebarState.Hidden">
-            <MenuEvents ItemSelected="Select" TValue="MenuItem"></MenuEvents> 
-        </MenuItem>
-
-        <MenuItem Text="Schedule" Url="/schedule"></MenuItem>
-    </MenuItems>
+<SfMenu Items="@MenuItemState.MenuItems">
+    <MenuFieldSettings ItemId="Id" Text="Text" Url="Url" Disabled="Disabled" ParentId="ParentId"></MenuFieldSettings>
 </SfMenu>
 
-
-@code{
-
-
-    private void Select(MenuEventArgs<MenuItem> args) 
-    {
-        if (args.Item.Id == "togggle-sidebar") { SidebarState.Open = !SidebarState.Open; }
-    } 
-}
