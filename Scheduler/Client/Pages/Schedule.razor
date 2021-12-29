@@ -20,7 +20,11 @@
 
     </DialogTemplates>
 </SfDialog>
-
+<SfSidebar Width="250px" Created="onSidebarCreate" @ref="sidebarObj" @bind-IsOpen="MenuItemState.ToggleSidebar"> 
+    <ChildContent>
+        <div style="text-align: center;" class="text-content"> Sidebar x</div>
+    </ChildContent>
+</SfSidebar>
 
 <div class="schedule-container">
     <SfAccordion>
@@ -79,7 +83,7 @@
     <ToastPosition X="Right" Y="Bottom"></ToastPosition>
 </SfToast>
 @code {
-
+    public string HideClass { get; set; } = "init-hide";
     [Parameter]
     public string? RoomID { get; set; }
     private string urlString { get; set; } = "";
@@ -235,6 +239,8 @@
     hubConnection?.State == HubConnectionState.Connected;
     protected async override void OnInitialized()
     {
+        MenuItemState.OnChange += StateHasChanged;
+
         MenuItemState.SetCurrentURL("schedule");
         RoomID = RoomID == null ? Guid.NewGuid().ToString() : RoomID;
         NavigationManager.NavigateTo($"/schedule/{RoomID}");
@@ -242,7 +248,9 @@
         hubConnection = new HubConnectionBuilder()
         .WithUrl(NavigationManager.ToAbsoluteUri("https://localhost:7104/chathub"))
         .Build();
-
+        //hubConnection = new HubConnectionBuilder()
+        //.WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+        //.Build();
         hubConnection.On<ScheduleData>("ReceiveMessage", async (scheduleData) =>
         {
             switch (scheduleData.Event)
@@ -363,10 +371,18 @@
     }
     public async void Dispose()
     {
+        MenuItemState.OnChange -= StateHasChanged;
+
         if (hubConnection is not null)
         {
             await hubConnection.DisposeAsync();
         }
+    }
+    SfSidebar sidebarObj = new SfSidebar();
+
+    private void onSidebarCreate()
+    {
+        MenuItemState.ToggleSidebar = !MenuItemState.ToggleSidebar;
     }
 
 }

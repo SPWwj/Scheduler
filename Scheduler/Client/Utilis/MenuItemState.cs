@@ -2,17 +2,34 @@
 {
     public class MenuItemState
     {
-        public List<CustomMenuItem> MenuItems = new List<CustomMenuItem>
+        private bool toggleSidebar;
+
+        public bool ToggleSidebar
         {
-            new CustomMenuItem{ Id = "parent1", Text = "Home" , Url = "/" },
-            new CustomMenuItem{ Id = "parent2", Text = "Chat", Url = "chat" },
-            new CustomMenuItem{ Id = "parent3", Text = "Schedule" , Url = "schedule" },
-            new CustomMenuItem{ Id = "parent3", Text = "Counter", Url = "counter" },
+            get => toggleSidebar;
+            set
+            {
+                toggleSidebar = value;
+                NotifyStateChanged();
+            }
+        }
+
+        public event Action? OnChange;
+
+        private void NotifyStateChanged() => OnChange?.Invoke();
+
+        public List<CustomMenuItem> MenuItems = new()
+        {
+            new CustomMenuItem{ Id = "1", Text = "Home" , Url = "/" },
+            new CustomMenuItem{ Id = "2", Text = "Schedule" , Url = "schedule" },
+            new CustomMenuItem { Id = "3", Text = "Open Chat Panel", Hidden = true },
         };
         public void SetCurrentURL(string url)
         {
             MenuItems.ForEach(i => i.Disabled = false);
             MenuItems.First(i => i.Url == url).Disabled = true;
+            if (url == "schedule") MenuItems.First(i => i.Id == "3").Hidden = false;
+            else MenuItems.First(i => i.Id == "3").Hidden = true;
         }
 
     }
@@ -23,6 +40,7 @@
         public string ParentId { get; set; }
         public string Url { get; set; }
         public bool Disabled { get; set; } = false;
+        public bool Hidden { get; set; } = false;
 
     }
 }

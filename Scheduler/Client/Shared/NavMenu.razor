@@ -2,6 +2,17 @@
 @inject MenuItemState MenuItemState
 
 <SfMenu Items="@MenuItemState.MenuItems">
+    <MenuEvents ItemSelected="Select" TValue="@CustomMenuItem"></MenuEvents>
     <MenuFieldSettings ItemId="Id" Text="Text" Url="Url" Disabled="Disabled" ParentId="ParentId"></MenuFieldSettings>
 </SfMenu>
 
+@code{
+    public void Select(MenuEventArgs<CustomMenuItem> args) 
+    {
+        if (args.Item.Id == "3") { 
+            MenuItemState.ToggleSidebar = !MenuItemState.ToggleSidebar;
+        }
+    } 
+
+
+}

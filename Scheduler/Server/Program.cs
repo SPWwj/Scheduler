@@ -8,10 +8,11 @@ builder.Host.ConfigureLogging(logging =>
     logging.AddConsole();
 });
 // Add services to the container.
-builder.Services.AddSignalR(conf =>
-{
-    conf.MaximumReceiveMessageSize = null;
-});
+//builder.Services.AddSignalR(conf =>
+//{
+//    conf.MaximumReceiveMessageSize = null;
+//});
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddResponseCompression(opts =>

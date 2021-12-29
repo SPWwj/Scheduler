@@ -15,8 +15,6 @@ namespace Scheduler.Shared.Utilis
         string AcadYear = "2021-2022";
 
         string AcadStartDate = "Mon, 10 Jan 2022"; //Mon, 10 Jan 2022
-        string myUrl = "https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6'";
-
         public async Task DecodeTimetables(List<TimetableLink> timetableLinks )
         {
             foreach (var t in timetableLinks)
