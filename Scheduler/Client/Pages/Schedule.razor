@@ -176,7 +176,7 @@
                                 @onclick="(() => HandleUpdateTimetable(s.Id))"></SfButton>
                                 <SfTooltip ID="Tooltip" class="url-tooltip" Target="@($"#url-{s.Id}")" Content="@s.Url">
                                     <SfTextBox id="@($"url-{s.Id}")" class="url-list" Readonly="true"
-                                    Value="@($"{s.Name} {s.Id}")" />
+                                    Value="@($"{s.Name} {s.Url}")" />
                                 </SfTooltip>
                             </div>
                         }
@@ -256,8 +256,8 @@ userData
     private List<AppointmentData> DataSource { get; set; } = new List<AppointmentData>();
     private List<UserData> UserDatas { get; set; } = new List<UserData>();
     private ObservableCollection<ChatMessage> chatMessages = new ObservableCollection<ChatMessage>();
-    string myUrl =
-    "https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6";
+    //string myUrl =
+    //"https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6";
 
     private string ToastContent { get; set; } = "Action completed";
     SfToast ToastObj = new SfToast();
@@ -272,7 +272,7 @@ userData
 
     private async void HandleUpdateTimetable(Guid? id)
     {
-        urlString = myUrl;// delete this
+        //urlString = myUrl;// delete this
 
         ScheduleData scheduleData = new()
         {
@@ -300,16 +300,27 @@ Id = id == null ? Guid.NewGuid() : (Guid)id!
 
     }
 
-    private async void AddTimeTable(string toast, List<TimetableLink> timetableLinks)
+    private async void AddTimeTable(string toast, List<TimetableLink> timetableLinks, string name)
     {
-        ModuleToSchedule moduleToSchedule = new ModuleToSchedule();
-        await moduleToSchedule.DecodeTimetables(timetableLinks);
-        moduleToSchedule.Data.AddRange(DataSource);
-        DataSource = moduleToSchedule.Data;
-        ToastContent = toast;
-        this.StateHasChanged();
-        await this.ToastObj.ShowAsync();
-        ToastContent = "";
+        try
+        {
+            ModuleToSchedule moduleToSchedule = new ModuleToSchedule();
+            await moduleToSchedule.DecodeTimetables(timetableLinks);
+            moduleToSchedule.Data.AddRange(DataSource);
+            DataSource = moduleToSchedule.Data;
+            Timetables.AddRange(timetableLinks);
+            ToastContent = toast;
+        }
+        catch
+        {
+            ToastContent = $"{name} has Input an Invalid Timetable Url";
+        }
+        finally
+        {
+            this.StateHasChanged();
+            await this.ToastObj.ShowAsync();
+            ToastContent = "";
+        }
     }
     private async void RemoveTimeTable(string toast, List<TimetableLink> timetableLinks)
     {
@@ -377,12 +388,12 @@ Id = id == null ? Guid.NewGuid() : (Guid)id!
         RoomID = RoomID == null ? Guid.NewGuid().ToString() : RoomID;
         NavigationManager.NavigateTo($"/schedule/{RoomID}");
 
-        hubConnection = new HubConnectionBuilder()
-        .WithUrl(NavigationManager.ToAbsoluteUri("https://localhost:7104/chathub"))
-        .Build();
         //hubConnection = new HubConnectionBuilder()
-        //.WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+        //.WithUrl(NavigationManager.ToAbsoluteUri("https:localhost:7104/chathub"))
         //.Build();
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+        .Build();
         hubConnection.On<ScheduleData>("ReceiveMessage", async (scheduleData) =>
         {
             switch (scheduleData.Event)
@@ -391,8 +402,7 @@ Id = id == null ? Guid.NewGuid() : (Guid)id!
                     switch (scheduleData.EventType)
                     {
                         case (ScheduleEvent.EventType.Add):
-                            Timetables.AddRange(scheduleData.TimetableLinks);
-                            AddTimeTable("Table Added", scheduleData.TimetableLinks);
+                            AddTimeTable("Table Added", scheduleData.TimetableLinks, scheduleData.Name!);
                             break;
                         case (ScheduleEvent.EventType.Delete):
                             RemoveTimeTable("Table Deleted", scheduleData.TimetableLinks);
