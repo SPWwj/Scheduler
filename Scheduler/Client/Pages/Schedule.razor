@@ -3,10 +3,115 @@
 @using Scheduler.Shared
 @using Scheduler.Shared.Utilis
 @using System.Drawing
+@using System.Collections.ObjectModel
 @implements IDisposable
 @inject NavigationManager NavigationManager
 @inject MenuItemState MenuItemState
+<style>
+    #list {
+        box-shadow: 0 1px 4px #ddd;
+        border-bottom: 1px solid #ddd;
+        margin: 0 auto;
+        border: 1px solid #ccc;
+    }
 
+    #list .e-list-item {
+        height: auto;
+        cursor: pointer;
+        line-height: 22px;
+        padding: 8px;
+    }
+
+    #list.e-listview .e-list-header {
+        background-color: orange;
+        color: white;
+    }
+
+    #list .e-list-item.e-active {
+        background-color: transparent;
+    }
+
+    #list .e-list-item.e-hover {
+        background-color: transparent;
+    }
+
+    .padding {
+        padding: 4px;
+    }
+
+    .right__align {
+        text-align: right;
+        margin-right: 8px;
+        padding-right: 8px;
+    }
+
+    .left__align {
+        margin-left: 8px;
+        padding-left: 8px;
+    }
+
+    .content__container {
+        background-color: aliceblue;
+    }
+
+    .flex {
+        display: flex;
+    }
+
+    .flex__center {
+        justify-content: center;
+    }
+
+    .vertical__center {
+        align-items: center;
+    }
+
+    .vertical {
+        flex-direction: column;
+    }
+
+    .flex__order__1 {
+        order: 1;
+    }
+
+    .flex__order__2 {
+        order: 2;
+    }
+
+    .flex__1 {
+        flex: 1;
+    }
+
+    .flex__2 {
+        flex: 2;
+    }
+
+    .flex__3 {
+        flex: 3;
+    }
+
+    .flex__5 {
+        flex: 5;
+    }
+
+    .flex__8 {
+        flex: 8;
+    }
+
+    .bold {
+        font-weight: 500;
+    }
+
+    .margin {
+        margin: 10px;
+        width: 350px;
+    }
+
+    .small__font {
+        font-size: 13px;
+        margin: 2px 0;
+    }
+</style>
 
 <SfDialog Width="250px" IsModal="true" Visible="DialogVisible">
     <DialogTemplates>
@@ -20,9 +125,34 @@
 
     </DialogTemplates>
 </SfDialog>
-<SfSidebar Width="250px" Created="onSidebarCreate" @ref="sidebarObj" @bind-IsOpen="MenuItemState.ToggleSidebar"> 
+<SfSidebar Position=SidebarPosition.Right Width="250px" Created="onSidebarCreate" @ref="sidebarObj"
+    @bind-IsOpen="MenuItemState.ToggleSidebar">
     <ChildContent>
-        <div style="text-align: center;" class="text-content"> Sidebar x</div>
+        <SfListView ID="list" DataSource="@chatMessages" ShowHeader="true" @onclick="CloseSidebar" HeaderTitle="Chat">
+            <ListViewFieldSettings TValue="ChatMessage" Id="Id" Text="Name"></ListViewFieldSettings>
+            <ListViewTemplates TValue="ChatMessage">
+                <Template>
+                    @{
+                        ChatMessage currentData = context as ChatMessage;
+                        <div class="flex item__container">
+                            <div
+                                class="flex content__container flex__8 vertical padding @(currentData.SenderId == userData.Id ? "right__align" : "left__align")">
+                                <div class="bold">@currentData.Name</div>
+                                <div class="small__font">@currentData.Text</div>
+                            </div>
+                        </div>
+                    }
+                </Template>
+            </ListViewTemplates>
+        </SfListView>
+        <div class="flex">
+            <div class="flex__8 padding">
+                <SfTextBox @ref="@chatInput" Placeholder="Type your message"></SfTextBox>
+            </div>
+            <div class="flex__1">
+                <SfButton @onclick="OnSend" IsPrimary="true">Send</SfButton>
+            </div>
+        </div>
     </ChildContent>
 </SfSidebar>
 
@@ -43,17 +173,17 @@
                         {
                             <div class='e-input-group'>
                                 <SfButton class="btn-cross-light" IconCss="e-icons e-close"
-                                      @onclick="(() => HandleUpdateTimetable(s.Id))"></SfButton>
+                                @onclick="(() => HandleUpdateTimetable(s.Id))"></SfButton>
                                 <SfTooltip ID="Tooltip" class="url-tooltip" Target="@($"#url-{s.Id}")" Content="@s.Url">
                                     <SfTextBox id="@($"url-{s.Id}")" class="url-list" Readonly="true"
-                                           Value="@($"{s.Name} {s.Id}")" />
+                                    Value="@($"{s.Name} {s.Id}")" />
                                 </SfTooltip>
                             </div>
                         }
                         <SfTextBox Placeholder="Timetable Share Url" ShowClearButton=true @bind-Value="urlString"
-                                   FloatLabelType="@FloatLabelType.Auto" />
+                            FloatLabelType="@FloatLabelType.Auto" />
                         <SfButton disabled="@(!IsConnected)" CssClass="e-round" class="btn-url-add"
-                                  IconCss="e-icons e-plus-icon" @onclick="() => HandleUpdateTimetable(null)">
+                            IconCss="e-icons e-plus-icon" @onclick="() => HandleUpdateTimetable(null)">
                         </SfButton>
                     </div>
                 </ContentTemplate>
@@ -65,7 +195,7 @@
         <ScheduleEventSettings DataSource="@DataSource" AllowEditFollowingEvents="true"></ScheduleEventSettings>
         <ScheduleResources>
             <ScheduleResource TItem="UserData" TValue="Guid" Title="Owner" Name="Owners" TextField="Name"
-                              DataSource="@UserDatas" Field="UserDataId" IdField="Id" ColorField="ThemeColor">
+                DataSource="@UserDatas" Field="UserDataId" IdField="Id" ColorField="ThemeColor">
             </ScheduleResource>
         </ScheduleResources>
         <ScheduleViews>
@@ -83,39 +213,40 @@
     <ToastPosition X="Right" Y="Bottom"></ToastPosition>
 </SfToast>
 @code {
-    public string HideClass { get; set; } = "init-hide";
     [Parameter]
     public string? RoomID { get; set; }
     private string urlString { get; set; } = "";
     public string Username { get; set; } = string.Empty;
     private UserData userData = new UserData();
     public int UpdateCount { get; set; } = 0;
+    SfTextBox chatInput;
+
     private async void addName()
     {
         if (Username != string.Empty)
         {
 
             userData = new UserData()
-                {
-                    Name = Username,
-                    Id = Guid.NewGuid(),
-                    RoomID = RoomID!,
-                    ThemeColor = ColorsHelper.Colors[new Random().Next(0, ColorsHelper.Colors.Count)]
-        };
+            {
+                Name = Username,
+                Id = Guid.NewGuid(),
+                RoomID = RoomID!,
+                ThemeColor = ColorsHelper.Colors[new Random().Next(0, ColorsHelper.Colors.Count)]
+            };
             DialogVisible = false;
             if (hubConnection is not null)
             {
                 ScheduleData scheduleData = new()
-                    {
-                        RoomID = RoomID!,
-                        Name = userData.Name,
-                        Event = ScheduleEvent.Event.UserEvent,
-                        EventType = ScheduleEvent.EventType.Add,
-                        UserDatas = new List<UserData>()
-                                    {
-                                        userData
-                                    }
-                    };
+                {
+                    RoomID = RoomID!,
+                    Name = userData.Name,
+                    Event = ScheduleEvent.Event.UserEvent,
+                    EventType = ScheduleEvent.EventType.Add,
+                    UserDatas = new List<UserData>()
+{
+userData
+}
+                };
                 await hubConnection.SendAsync("SendMessage", scheduleData);
             }
             this.StateHasChanged();
@@ -124,6 +255,7 @@
     private List<TimetableLink> Timetables { get; set; } = new List<TimetableLink>();
     private List<AppointmentData> DataSource { get; set; } = new List<AppointmentData>();
     private List<UserData> UserDatas { get; set; } = new List<UserData>();
+    private ObservableCollection<ChatMessage> chatMessages = new ObservableCollection<ChatMessage>();
     string myUrl =
     "https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6";
 
@@ -143,22 +275,22 @@
         urlString = myUrl;// delete this
 
         ScheduleData scheduleData = new()
-            {
-                Name = Username,
-                RoomID = RoomID!,
-                Event = ScheduleEvent.Event.Timetable,
-                EventType = id == null ? ScheduleEvent.EventType.Add : ScheduleEvent.EventType.Delete,
-                TimetableLinks = new List<TimetableLink>()
-                {
-                    new TimetableLink()
-                    {
-                        Name = Username,
-                        Url = urlString,
-                        OwerID = userData.Id,
-                        Id = id == null ? Guid.NewGuid() : (Guid)id!
-                    }
-                }
-            };
+        {
+            Name = Username,
+            RoomID = RoomID!,
+            Event = ScheduleEvent.Event.Timetable,
+            EventType = id == null ? ScheduleEvent.EventType.Add : ScheduleEvent.EventType.Delete,
+            TimetableLinks = new List<TimetableLink>()
+{
+new TimetableLink()
+{
+Name = Username,
+Url = urlString,
+OwerID = userData.Id,
+Id = id == null ? Guid.NewGuid() : (Guid)id!
+}
+}
+        };
         if (hubConnection is not null)
         {
             await hubConnection.SendAsync("SendMessage", scheduleData);
@@ -168,7 +300,7 @@
 
     }
 
-    private async void AddTimeTable(string toast,List<TimetableLink> timetableLinks)
+    private async void AddTimeTable(string toast, List<TimetableLink> timetableLinks)
     {
         ModuleToSchedule moduleToSchedule = new ModuleToSchedule();
         await moduleToSchedule.DecodeTimetables(timetableLinks);
@@ -179,7 +311,7 @@
         await this.ToastObj.ShowAsync();
         ToastContent = "";
     }
-    private async void RemoveTimeTable(string toast,List<TimetableLink> timetableLinks)
+    private async void RemoveTimeTable(string toast, List<TimetableLink> timetableLinks)
     {
         Timetables.RemoveAll(t => timetableLinks.Any(a => a.Id == t.Id));
         var apts = DataSource.ToList();
@@ -200,11 +332,11 @@
         {
             args.Cancel = true;
             ScheduleData scheduleData = new ScheduleData()
-                {
-                    Name = Username,
-                    RoomID = RoomID!,
-                    Event = ScheduleEvent.Event.Appointment
-                };
+            {
+                Name = Username,
+                RoomID = RoomID!,
+                Event = ScheduleEvent.Event.Appointment
+            };
 
             switch (args.ActionType)
             {
@@ -263,10 +395,10 @@
                             AddTimeTable("Table Added", scheduleData.TimetableLinks);
                             break;
                         case (ScheduleEvent.EventType.Delete):
-                            RemoveTimeTable("Table Deleted",scheduleData.TimetableLinks);
+                            RemoveTimeTable("Table Deleted", scheduleData.TimetableLinks);
                             break;
                     }
-                    UpdateCount = UpdateCount + 1; 
+                    UpdateCount = UpdateCount + 1;
                     break;
 
                 case (ScheduleEvent.Event.UserEvent):
@@ -277,7 +409,7 @@
                             UserDatas = scheduleData.UserDatas;
                             break;
                     }
-                    UpdateCount = UpdateCount + 1; 
+                    UpdateCount = UpdateCount + 1;
                     StateHasChanged();
 
                     break;
@@ -304,7 +436,7 @@
                         default:
                             break;
                     }
-                    UpdateCount = UpdateCount + 1; 
+                    UpdateCount = UpdateCount + 1;
                     StateHasChanged();
                     await this.ToastObj.ShowAsync();
                     ToastContent = "";
@@ -332,7 +464,7 @@
                                 scheduleData.Appointments = DataSource.ToList();
                                 scheduleData.UserDatas = UserDatas.ToList();
                                 scheduleData.TimetableLinks = Timetables.ToList();
-
+                                scheduleData.ChatMessages = chatMessages.ToList();
                                 await hubConnection.SendAsync("PlantingMessage", scheduleData);
                                 break;
                             case (ScheduleEvent.EventType.Seeding):
@@ -340,7 +472,7 @@
                                 UserDatas = scheduleData.UserDatas;
                                 Timetables = scheduleData.TimetableLinks;
                                 DataSource = scheduleData.Appointments;
-
+                                scheduleData.ChatMessages.ForEach(c => chatMessages.Add(c));
                                 ToastContent = "Room History loaded";
                                 StateHasChanged();
                                 await this.ToastObj.ShowAsync();
@@ -358,7 +490,11 @@
                     break;
             }
         });
-
+        hubConnection.On<List<ChatMessage>>("ReceiveChat", (chatMsg) =>
+        {
+            chatMsg.ForEach(c => chatMessages.Add(c));
+            this.StateHasChanged();
+        });
         await hubConnection.StartAsync();
         await JoinRoom();
     }
@@ -382,7 +518,27 @@
 
     private void onSidebarCreate()
     {
+        CloseSidebar();
+    }
+    private void CloseSidebar()
+    {
         MenuItemState.ToggleSidebar = !MenuItemState.ToggleSidebar;
+    }
+    private async void OnSend()
+    {
+        if (chatInput.Value != string.Empty && hubConnection is not null)
+        {
+            var chats = new List<ChatMessage>(){
+new ChatMessage(){
+SenderId = userData.Id,
+Name = userData.Name,
+Text = chatInput.Value
+}
+};
+            await hubConnection.SendAsync("SendChat", chats, userData.RoomID);
+
+        }
+
     }
 
 }

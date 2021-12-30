@@ -15,6 +15,8 @@ namespace Scheduler.Shared
         public int UpdateCount { get; set; }
         public List<AppointmentData> Appointments { get; set; } = new List<AppointmentData>();
         public List<TimetableLink> TimetableLinks { get; set; } = new List<TimetableLink>();
+        public List<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
+
         public List<UserData> UserDatas { get; set; } = new List<UserData>();
         public Event Event { get; set; } = Event.Timetable;
         public EventType EventType { get; set; }

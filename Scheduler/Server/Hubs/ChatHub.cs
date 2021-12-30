@@ -13,10 +13,12 @@ namespace Scheduler.Server.Hubs
             _logger = logger;
         }
 
-
+        public async Task SendChat(List<ChatMessage> chatMessages,string roomName)
+        {
+            await Clients.Group(roomName).SendAsync("ReceiveChat", chatMessages);
+        }
         public async Task SendMessage(ScheduleData scheduleData)
         {
-            _logger.LogInformation(Context?.User?.ToString());
             await Clients.Group(scheduleData.RoomID).SendAsync("ReceiveMessage", scheduleData);
         }
         public async Task JoinRoom(string roomName)
