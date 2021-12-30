@@ -504,6 +504,7 @@ Id = id == null ? Guid.NewGuid() : (Guid)id!
         {
             chatMsg.ForEach(c => chatMessages.Add(c));
             this.StateHasChanged();
+            chatInput.FocusAsync();
         });
         await hubConnection.StartAsync();
         await JoinRoom();
