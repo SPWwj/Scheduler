@@ -1,0 +1,101 @@
+﻿@page "/tictactoe"
+@using Lib.Shared.TicTacToe;
+<div class="tic_tac_toe">
+    <h3>TicTacToe</h3>
+    <div class="accordion" id="accordionPlayer">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    Current Player: @TicTacToe.CurrentPlayer.Name
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionPlayer">
+                <div class="accordion-body">
+                    @foreach (var player in TicTacToe.Players)
+                    {
+                        <div class="input-group">
+                            <label class="input-group-text" for="player_@player.ID">@player</label>
+                            <input type="text" class="form-control" id="player_@player.ID" @bind="@player.TempName">
+                            <button class="btn btn-outline-secondary" type="button" @onclick="()=>changeName(player)">Change Name</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <h2> Winner is: @(TicTacToe.Winner)</h2>
+    <div class="board">
+        @foreach (var s in TicTacToe.Board.Squares)
+        {
+            <div @onclick="() => clickSquare(s)" class="@s.CssClass square"><img src="@s" alt="@s.Player" /></div>
+        }
+    </div>
+    <button type="button" @onclick="reset" class="btn btn-outline-success">Reset</button>
+    <!-- Button trigger modal -->
+    <!-- Modal -->
+    <div class="modal fade @modal.Show" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" style="@modal.Display">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">@(TicTacToe.Winner == null ? "" 
+                        : TicTacToe.Winner.Name =="Draw" ? TicTacToe.Winner : "Congrat :" + TicTacToe.Winner) !</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @(TicTacToe.Winner == null ? "" 
+                        : TicTacToe.Winner.Name =="Draw" ? "Peace!" : "You Win the Game!")
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" @onclick="closeModal">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    class Modal
+    {
+        public string Show { get; set; } = "";
+        public string Display { get; set; } = "";
+    }
+    Modal modal = new Modal();
+
+    private string name = "";
+    public TicTacToe TicTacToe { get; set; } = new TicTacToe();
+    private void clickSquare(Square s)
+    {
+        TicTacToe.PlayTurn(s);
+        if (TicTacToe.Winner != null)
+        {
+            modal.Display = "display:block";
+            modal.Show = "show";
+        }
+        else
+        {
+            modal.Display = "";
+            modal.Show = "";
+        }
+    }
+    private void closeModal()
+    {
+        modal.Display = "";
+        modal.Show = "";
+    }
+    private void setName()
+    {
+        TicTacToe.SetName("name");
+        @* StateHasChanged(); *@
+    }
+    private void reset()
+    {
+        TicTacToe.Reset();
+    }
+    private void changeName(Player player)
+    {
+        player.Name = player.TempName;
+        player.TempName = "";
+    }
+
+}
+

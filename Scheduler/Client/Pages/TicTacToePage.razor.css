@@ -1,0 +1,35 @@
+﻿/** @format */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-template-rows: repeat(3, 150px);
+  padding-left: 20%;
+  overflow:hidden;
+  padding-right: 20%;
+}
+.tic_tac_toe {
+  text-align: center;
+}
+.square {
+  border: 1px solid black;
+  height:100%;
+  width:100%;
+  line-height: 150px;
+}
+    .square:hover {
+        border-color: greenyellow;
+    }
+    .square img {
+        height: 100%;
+        width: 100%;
+        padding: 5%;
+        object-fit: contain;
+    }
+
+.winner_square{
+    border-color: red;
+}
+    .winner_square:hover {
+        border-color: red;
+    }

@@ -1,0 +1,5 @@
+{
+  "vscode-edge-devtools.browserFlavor": "Stable",
+  "vscode-edge-devtools.useHttps": true,
+  "vscode-edge-devtools.webhint": false
+}

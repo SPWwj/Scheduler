@@ -23,6 +23,7 @@
             new CustomMenuItem{ Id = "1", Text = "Home" , Url = "/" },
             new CustomMenuItem{ Id = "2", Text = "Schedule" , Url = "schedule" },
             new CustomMenuItem { Id = "3", Text = "Open Chat Panel", Hidden = true },
+            new CustomMenuItem { Id = "4", Text = "Tic Tac Toe", Url ="tictactoe" },
         };
         public void SetCurrentURL(string url)
         {

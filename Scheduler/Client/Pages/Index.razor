@@ -2,11 +2,14 @@
 @using System.Globalization
 @using Scheduler.Client.Utilis
 @inject MenuItemState MenuItemState
+@inject NavigationManager NavigationManager
 
 
 @code{
     protected override void OnInitialized()
-    {
+    {        
+        NavigationManager.NavigateTo($"/tictactoe");
+
         MenuItemState.SetCurrentURL("/");
     }
 

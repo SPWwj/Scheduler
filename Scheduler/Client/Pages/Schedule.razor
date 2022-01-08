@@ -242,9 +242,9 @@
                         Event = ScheduleEvent.Event.UserEvent,
                         EventType = ScheduleEvent.EventType.Add,
                         UserDatas = new List<UserData>()
-{
-userData
-}
+                        {
+                            userData
+                        }
                     };
                 await hubConnection.SendAsync("SendMessage", scheduleData);
             }
