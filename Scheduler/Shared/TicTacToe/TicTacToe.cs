@@ -1,4 +1,4 @@
-namespace Lib.Shared.TicTacToe
+namespace Scheduler.Shared.TicTacToe
 {
     public class TicTacToe
     {

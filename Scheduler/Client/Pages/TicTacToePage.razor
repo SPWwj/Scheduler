@@ -1,5 +1,4 @@
 ﻿@page "/tictactoe"
-@using Lib.Shared.TicTacToe;
 <div class="tic_tac_toe">
     <h3>TicTacToe</h3>
     <div class="accordion" id="accordionPlayer">
@@ -27,7 +26,7 @@
     <div class="board">
         @foreach (var s in TicTacToe.Board.Squares)
         {
-            <div @onclick="() => clickSquare(s)" class="@s.CssClass square"><img src="@s" alt="@s.Player" /></div>
+            <div id='@($"square-{s.ID}")' @onclick="() => clickSquare(s)" class="@s.CssClass square"><img src="@s" alt="@s.Player" /></div>
         }
     </div>
     <button type="button" @onclick="reset" class="btn btn-outline-success">Reset</button>
