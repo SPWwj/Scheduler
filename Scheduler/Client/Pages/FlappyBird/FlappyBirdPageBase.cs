@@ -27,11 +27,10 @@ namespace Scheduler.Client.Pages.FlappyBird
 
     public class FlappyBirdPageBase : ComponentBase, IDisposable
     {
-        [Inject] protected MenuItemState? MenuItemState { get; set; }
+        //[Inject] protected MenuItemState? MenuItemState { get; set; }
 
 
-        Universe Universe { get; set; } = new Universe();// For blazor server inject this as singleton to enable multi player
-        // [Inject] protected IJSRuntime JSRuntime {get; set; }       
+        [Inject] Universe Universe { get; set; } = new Universe();// For blazor server inject this as singleton to enable multi player
 
         protected void KeyDown(KeyboardEventArgs e)
         {
@@ -66,7 +65,7 @@ namespace Scheduler.Client.Pages.FlappyBird
 
         protected override void OnInitialized()
         {
-            MenuItemState!.SetCurrentURL("flappybird");
+            //MenuItemState!.SetCurrentURL("flappybird");
 
         }
 
@@ -76,7 +75,7 @@ namespace Scheduler.Client.Pages.FlappyBird
         protected void OnNickIsSet()
         {
             if (string.IsNullOrWhiteSpace(Birdname)) return;
-
+            if (Universe == null) Universe = new Universe();
             MyBird = new Bird(Universe)
             {
                 Name = Birdname

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using Scheduler.Client.FlappyBird.Data;
 using Scheduler.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Host.ConfigureLogging(logging =>
 {
     logging.ClearProviders();
@@ -25,6 +27,9 @@ builder.Services.AddCors(options =>
 //builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddSingleton<Universe>();
+
 builder.Services.AddResponseCompression(opts =>
 {
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
@@ -45,28 +50,7 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-//app.Use(async (context, next) =>
-//{
 
-//    if (context.Request.Method == "OPTIONS")
-//    {
-
-//        //允许处理跨域
-//        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-//        context.Response.Headers.Add("Access-Control-Allow-Headers", "*");
-//        context.Response.Headers.Add("Access-Control-Allow-Methods", "*");
-//        await context.Response.CompleteAsync();
-//    }
-//    else
-//    {
-
-//        //允许处理跨域
-//        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-//        context.Response.Headers.Add("Access-Control-Allow-Headers", "*");
-//        context.Response.Headers.Add("Access-Control-Allow-Methods", "*");
-//        await next();
-//    }
-//});
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
@@ -78,7 +62,8 @@ app.UseCors();
 app.MapRazorPages();
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
-
+app.MapBlazorHub();
 app.MapFallbackToFile("index.html");
+//app.MapFallbackToFile("FlappyBirdMultiplayer");
 
 app.Run();

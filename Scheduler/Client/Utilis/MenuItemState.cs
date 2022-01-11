@@ -25,6 +25,7 @@
             new CustomMenuItem { Id = "3", Text = "Open Chat Panel", Hidden = true },
             new CustomMenuItem { Id = "4", Text = "Tic Tac Toe", Url = "tictactoe" },
             new CustomMenuItem { Id = "5", Text = "Flappy Bird", Url = "flappybird" },
+            new CustomMenuItem { Id = "6", Text = "Flappy Bird Multiplayer", Url = "FlappyBirdMultiplayer" },
         };
         public void SetCurrentURL(string url)
         {
