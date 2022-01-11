@@ -20,10 +20,11 @@
 
         public List<CustomMenuItem> MenuItems = new()
         {
-            new CustomMenuItem{ Id = "1", Text = "Home" , Url = "/" },
-            new CustomMenuItem{ Id = "2", Text = "Schedule" , Url = "schedule" },
+            new CustomMenuItem { Id = "1", Text = "Home", Url = "/" },
+            new CustomMenuItem { Id = "2", Text = "Schedule", Url = "schedule" },
             new CustomMenuItem { Id = "3", Text = "Open Chat Panel", Hidden = true },
-            new CustomMenuItem { Id = "4", Text = "Tic Tac Toe", Url ="tictactoe" },
+            new CustomMenuItem { Id = "4", Text = "Tic Tac Toe", Url = "tictactoe" },
+            new CustomMenuItem { Id = "5", Text = "Flappy Bird", Url = "flappybird" },
         };
         public void SetCurrentURL(string url)
         {

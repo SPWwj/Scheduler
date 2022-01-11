@@ -1,0 +1,58 @@
+﻿@inherits FlappyBirdPageBase
+@using Scheduler.Client.Pages.FlappyBird
+@page "/flappybird"
+<div class="flappybird">
+
+@if (!MyBirdIsSet)
+{
+        <div class="nickname">
+
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" maxlength="12" @bind="@Birdname" placeholder="Player Name"
+                aria-label="Player Name" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button @onclick="OnNickIsSet" class="btn btn-outline-secondary" type="button">Play</button>
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                <h1>Disclaimer</h1>
+                <p>This project is just a lab to experiment with #BlazorWASM. </p>
+                <p>All source project, license and credits are available at <a
+                    href="https://github.com/ctrl-alt-d/FlappyBlazorBird">github</a></p>
+                <p>Flappy Blazor Bird is (a portion) of sourabhv's FlapPyBird project transcoded to Blazor.</p>
+            </div>
+        </div>
+}
+else
+{
+    @lock (ToRender)
+    {
+        <div class="outer-div" @ref="OuterDiv" @onkeydown="@KeyDown" tabindex="0" @onclick="@OnClick">
+@*            <div class="top-div"></div>
+*@            <div class="game-div">
+                @foreach (var printable in ToRender)
+                {
+                    <div id="@printable.Key" @key="printable.Key" class="@printable.CssClass" style="@printable.CssStyle"
+                        draggable="false" dragstart="false;"/>
+                }
+                @foreach (var gamer in Firsts)
+                {
+                    <div class="birdname" style="@gamer.CssStyle">@gamer.Name  x</div>
+                }
+                <div class="statistics">
+                    <ul>
+                        <li>players @(Statistics.totalPlayers.ToString()) fps @(Statistics.fps.ToString())</li>
+                        <li>total sessions @(Statistics.totalSessions)</li>
+                        <li>since @(Statistics.startedAt)</li>
+                        <li>Record @(Statistics.maxScore) by @(Statistics.maxScorePlayer)</li>
+                    </ul>
+                </div>
+            </div>
+@*            <div class="left-div"></div>
+            <div class="right-div"></div>
+            <div class="down-div"></div>*@
+        </div>
+    }
+}
+</div>

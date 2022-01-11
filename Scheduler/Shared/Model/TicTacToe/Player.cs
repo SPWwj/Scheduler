@@ -1,4 +1,4 @@
-namespace Scheduler.Shared.TicTacToe
+namespace Scheduler.Shared.Model.TicTacToe
 {
     public class Player
     {

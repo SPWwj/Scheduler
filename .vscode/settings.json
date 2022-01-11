@@ -1,5 +1,7 @@
 {
   "vscode-edge-devtools.browserFlavor": "Stable",
   "vscode-edge-devtools.useHttps": true,
-  "vscode-edge-devtools.webhint": false
+  "vscode-edge-devtools.webhint": false,
+  "appService.defaultWebAppToDeploy": "/subscriptions/0bb9e8eb-c4b5-4a1d-985d-03918f8270e7/resourceGroups/BitFlowResource/providers/Microsoft.Web/sites/SchedulerBlazorWasm",
+  "appService.deploySubpath": "Scheduler\\Server"
 }

@@ -1,14 +1,19 @@
 ﻿@page "/tictactoe"
+@inject MenuItemState MenuItemState
+
 <div class="tic_tac_toe">
     <h3>TicTacToe</h3>
+    
     <div class="accordion" id="accordionPlayer">
         <div class="accordion-item">
             <h2 class="accordion-header" id="headingOne">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    Current Player: @TicTacToe.CurrentPlayer.Name
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                   <p> Current Player: @TicTacToe.CurrentPlayer.Name </p>
                 </button>
+                                        <span> Winner is: @(TicTacToe.Winner)</span>
+
             </h2>
-            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionPlayer">
+            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionPlayer">
                 <div class="accordion-body">
                     @foreach (var player in TicTacToe.Players)
                     {
@@ -22,27 +27,29 @@
             </div>
         </div>
     </div>
-    <h2> Winner is: @(TicTacToe.Winner)</h2>
     <div class="board">
         @foreach (var s in TicTacToe.Board.Squares)
         {
-            <div id='@($"square-{s.ID}")' @onclick="() => clickSquare(s)" class="@s.CssClass square"><img src="@s" alt="@s.Player" /></div>
+            <div @onclick="() => clickSquare(s)" class="@s.CssClass square @($"square-{s.ID}")"><img src="@s" alt="@s.Player" /></div>
         }
     </div>
     <button type="button" @onclick="reset" class="btn btn-outline-success">Reset</button>
+
     <!-- Button trigger modal -->
     <!-- Modal -->
     <div class="modal fade @modal.Show" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" style="@modal.Display">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">@(TicTacToe.Winner == null ? "" 
-                        : TicTacToe.Winner.Name =="Draw" ? TicTacToe.Winner : "Congrat :" + TicTacToe.Winner) !</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">
+                        @(TicTacToe.Winner == null ? ""
+                        : TicTacToe.Winner.Name =="Draw" ? TicTacToe.Winner : "Congrat :" + TicTacToe.Winner) !
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    @(TicTacToe.Winner == null ? "" 
-                        : TicTacToe.Winner.Name =="Draw" ? "Peace!" : "You Win the Game!")
+                    @(TicTacToe.Winner == null ? ""
+                    : TicTacToe.Winner.Name =="Draw" ? "Peace!" : "You Win the Game!")
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" @onclick="closeModal">Ok</button>
@@ -94,6 +101,10 @@
     {
         player.Name = player.TempName;
         player.TempName = "";
+    }
+    protected override void OnInitialized()
+    {
+        MenuItemState.SetCurrentURL("tictactoe");
     }
 
 }
