@@ -521,8 +521,12 @@
 
         if (hubConnection is not null)
         {
+            if (!string.IsNullOrWhiteSpace(RoomID)){
+                await hubConnection.SendAsync("LeaveRoom", RoomID);
+            }
             await hubConnection.DisposeAsync();
         }
+       
     }
     SfSidebar sidebarObj = new SfSidebar();
 
@@ -532,7 +536,7 @@
     }
     private void CloseSidebar()
     {
-        MenuItemState.ToggleSidebar = !MenuItemState.ToggleSidebar;
+        //MenuItemState.ToggleSidebar = !MenuItemState.ToggleSidebar;
     }
     private async void OnSend()
     {

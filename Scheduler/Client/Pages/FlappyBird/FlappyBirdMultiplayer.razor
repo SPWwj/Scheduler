@@ -1,0 +1,14 @@
+﻿@page "/flappybirdmultiplayerxx";
+@inject NavigationManager uriHelper;
+
+<h3>FlappyBirdMultiplayer</h3>
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            uriHelper.NavigateTo(uriHelper.Uri, forceLoad: true, replace:false);
+        }
+    }
+}

@@ -52,18 +52,19 @@ else
 }
 
 app.UseHttpsRedirection();
-
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
 app.UseCors();
-
-app.MapRazorPages();
-app.MapControllers();
-app.MapHub<ChatHub>("/chathub");
 app.MapBlazorHub();
+app.MapRazorPages();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}"); 
+app.MapHub<ChatHub>("/chathub");
+//app.MapFallbackToController("Index", "FlappyBirdMultiplayer");
+
 app.MapFallbackToFile("index.html");
-//app.MapFallbackToFile("FlappyBirdMultiplayer");
 
 app.Run();
