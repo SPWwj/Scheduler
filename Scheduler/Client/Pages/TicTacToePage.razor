@@ -1,9 +1,10 @@
 ﻿@page "/tictactoe"
 @inject MenuItemState MenuItemState
+@inject IJSRuntime js;
 
 <div class="tic_tac_toe">
     <h3>TicTacToe</h3>
-    
+
     <div class="accordion" id="accordionPlayer">
         <div class="accordion-item">
             <h2 class="accordion-header" id="headingOne">
@@ -66,11 +67,11 @@
         public string Display { get; set; } = "";
     }
     Modal modal = new Modal();
-
     private string name = "";
     public TicTacToe TicTacToe { get; set; } = new TicTacToe();
     private void clickSquare(Square s)
     {
+        js.InvokeVoidAsync("PlayAudioFile", "/assets/audio/die.ogg");
         TicTacToe.PlayTurn(s);
         if (TicTacToe.Winner != null)
         {

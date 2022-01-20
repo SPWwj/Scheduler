@@ -255,8 +255,8 @@
     private List<AppointmentData> DataSource { get; set; } = new List<AppointmentData>();
     private List<UserData> UserDatas { get; set; } = new List<UserData>();
     private ObservableCollection<ChatMessage> chatMessages = new ObservableCollection<ChatMessage>();
-    //string myUrl =
-    //"https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6";
+    string myUrl =
+    "https://nusmods.com/timetable/sem-2/share?CS1231S=TUT:05,LEC:1&CS2030S=REC:06,LAB:16B,LEC:1&CS2100=LAB:07,TUT:17,LEC:1&ES1103=SEC:A07&MA1521=LEC:1,TUT:6";
 
     private string ToastContent { get; set; } = "Action completed";
     SfToast ToastObj = new SfToast();
@@ -507,6 +507,10 @@
         });
         await hubConnection.StartAsync();
         await JoinRoom();
+
+        //set default;
+        urlString = myUrl;
+        HandleUpdateTimetable(null);
     }
     private async Task JoinRoom()
     {

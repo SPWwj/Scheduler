@@ -5,7 +5,7 @@ using Scheduler.Client.FlappyBird.Data;
 using Scheduler.Client.Utilis;
 using Syncfusion.Blazor;
 
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTU2MjM1QDMxMzkyZTM0MmUzMEIxMUVDUWFIbFdIQ0JHZjN1VHRoRm04aVdZU1NpemVQQUU3azZ2TWxlQWc9");
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTY3OTQ1QDMxMzkyZTM0MmUzMGhacFVya2s1aURuRk5XR2p1b3I1YUFNK0RXUnp2SEc1R3NWYUhaOUMxdDg9");
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

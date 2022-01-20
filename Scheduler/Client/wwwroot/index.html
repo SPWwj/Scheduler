@@ -28,6 +28,34 @@
 
     <script src="_framework/blazor.webassembly.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script>
+
+        //window.PlayAudioFile = (src) => {
+        //    var audio = document.getElementById('audio');
+        //    if (audio != null) {
+        //        audio = document.createElement('audio');
+        //        audio.src = src;
+
+        //        audio.type = 'audio/mpeg';
+        //        document.body.appendChild(audio);
+        //        }
+        //    audio.load();
+        //    audio.play();
+        //}
+        window.PlayAudioFile = (src) => {
+            var sound = document.getElementById('audio');
+            console.log(sound);
+            if (sound == null) {
+                sound = document.createElement('audio');
+                sound.id ='audio'
+                sound.type = 'audio/mpeg';
+                document.body.appendChild(sound);
+            }
+            sound.src = src;
+            sound.load();
+            sound.play();
+        }
+    </script>
 </body>
 
 </html>
